@@ -22,6 +22,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/projects', [App\Http\Controllers\ProjectController::class, 'index'])->name('projects.index');
     Route::post('/projects', [App\Http\Controllers\ProjectController::class, 'store'])->name('projects.store');
     Route::get('/projects/{project:slug}', [App\Http\Controllers\ProjectController::class, 'show'])->name('projects.show');
+    Route::patch('/projects/{project}', [App\Http\Controllers\ProjectController::class, 'update'])->name('projects.update');
+    Route::delete('/projects/{project}', [App\Http\Controllers\ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::post('/projects/{project}/members', [App\Http\Controllers\ProjectController::class, 'addMember'])->name('projects.members.store');
     
     Route::patch('/columns/{column}', [App\Http\Controllers\ColumnController::class, 'update'])->name('columns.update');
     Route::post('/columns/{column}/move', [App\Http\Controllers\ColumnController::class, 'move'])->name('columns.move');

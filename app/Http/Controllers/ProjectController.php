@@ -97,4 +97,58 @@ class ProjectController extends Controller
             'board' => $board
         ]);
     }
+
+    public function update(Request $request, Project $project)
+    {
+        if ($project->owner_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'color' => 'nullable|string|size:7',
+        ]);
+
+        $project->update($validated);
+
+        return back();
+    }
+
+    public function destroy(Project $project)
+    {
+        if ($project->owner_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $project->delete();
+
+        return redirect()->route('projects.index');
+    }
+
+    public function addMember(Request $request, Project $project)
+    {
+        if ($project->owner_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $userToAdd = \App\Models\User::where('email', $validated['email'])->first();
+
+        // Check if already a member
+        if ($project->members()->where('user_id', $userToAdd->id)->exists() || $project->owner_id === $userToAdd->id) {
+            return back()->withErrors(['email' => 'User is already a member of this project.']);
+        }
+
+        ProjectMember::create([
+            'project_id' => $project->id,
+            'user_id' => $userToAdd->id,
+            'role' => 'member',
+        ]);
+
+        return back();
+    }
 }

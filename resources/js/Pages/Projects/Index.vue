@@ -8,6 +8,10 @@ defineProps({
 });
 
 const showModal = ref(false);
+const showEditModal = ref(false);
+const showMemberModal = ref(false);
+const showDeleteModal = ref(false);
+const activeProjectMenu = ref(null);
 
 const form = useForm({
     name: '',
@@ -15,11 +19,76 @@ const form = useForm({
     color: '#4f46e5'
 });
 
+const editForm = useForm({
+    id: null,
+    name: '',
+    description: '',
+    color: '#4f46e5'
+});
+
+const memberForm = useForm({
+    project_id: null,
+    email: '',
+});
+
+const deleteForm = useForm({
+    id: null,
+    confirm_email: '',
+});
+
 const submit = () => {
     form.post(route('projects.store'), {
         onSuccess: () => {
             showModal.value = false;
             form.reset();
+        }
+    });
+};
+
+const openEditModal = (project) => {
+    editForm.id = project.id;
+    editForm.name = project.name;
+    editForm.description = project.description;
+    editForm.color = project.color;
+    showEditModal.value = true;
+    activeProjectMenu.value = null;
+};
+
+const submitUpdate = () => {
+    editForm.patch(route('projects.update', editForm.id), {
+        onSuccess: () => {
+            showEditModal.value = false;
+        }
+    });
+};
+
+const openMemberModal = (project) => {
+    memberForm.project_id = project.id;
+    memberForm.email = '';
+    showMemberModal.value = true;
+    activeProjectMenu.value = null;
+};
+
+const submitMember = () => {
+    memberForm.post(route('projects.members.store', memberForm.project_id), {
+        onSuccess: () => {
+            showMemberModal.value = false;
+            memberForm.reset();
+        }
+    });
+};
+
+const openDeleteModal = (project) => {
+    deleteForm.id = project.id;
+    deleteForm.confirm_email = '';
+    showDeleteModal.value = true;
+    activeProjectMenu.value = null;
+};
+
+const submitDelete = () => {
+    deleteForm.delete(route('projects.destroy', deleteForm.id), {
+        onSuccess: () => {
+            showDeleteModal.value = false;
         }
     });
 };
@@ -41,9 +110,31 @@ const submit = () => {
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div v-for="project in projects" :key="project.id" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 hover:shadow-md transition-shadow" :style="{ borderTopColor: project.color || '#ccc' }">
+                    <div v-for="project in projects" :key="project.id" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 hover:shadow-md transition-shadow relative" :style="{ borderTopColor: project.color || '#ccc' }">
+                        <!-- Project Menu -->
+                        <div v-if="project.owner_id === $page.props.auth.user.id" class="absolute right-2 top-2">
+                             <button @click="activeProjectMenu = activeProjectMenu === project.id ? null : project.id" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                     <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                 </svg>
+                             </button>
+
+                             <div v-if="activeProjectMenu === project.id" class="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-20 border border-gray-100 py-1">
+                                 <button @click="openEditModal(project)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                     Rename Project
+                                 </button>
+                                 <button @click="openMemberModal(project)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                     Add Member
+                                 </button>
+                                 <div class="border-t border-gray-100 my-1"></div>
+                                 <button @click="openDeleteModal(project)" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                     Delete Project
+                                 </button>
+                             </div>
+                        </div>
+
                         <div class="p-6 text-gray-900 flex flex-col h-full">
-                            <h3 class="text-lg font-bold">{{ project.name }}</h3>
+                            <h3 class="text-lg font-bold pr-6">{{ project.name }}</h3>
                             <p class="text-gray-600 text-sm mt-2 line-clamp-2 h-10">{{ project.description }}</p>
                             
                             <div class="mt-4 flex justify-end">
@@ -67,6 +158,103 @@ const submit = () => {
                              <p class="text-gray-500 font-medium">Create New Project</p>
                          </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Member Modal -->
+        <div v-if="showMemberModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div @click="showMemberModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form @submit.prevent="submitMember">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Add Member</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Member Email</label>
+                                    <input v-model="memberForm.email" type="email" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="user@example.com">
+                                    <div v-if="memberForm.errors.email" class="text-red-500 text-xs mt-1">{{ memberForm.errors.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="memberForm.processing" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Invite Member
+                            </button>
+                            <button @click="showMemberModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Project Modal -->
+        <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div @click="showEditModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form @submit.prevent="submitUpdate">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Rename Project</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Project Name</label>
+                                    <input v-model="editForm.name" type="text" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Description</label>
+                                    <textarea v-model="editForm.description" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Color Theme</label>
+                                    <input v-model="editForm.color" type="color" class="mt-2 h-8 w-8 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="editForm.processing" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Save Changes
+                            </button>
+                            <button @click="showEditModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Project Modal -->
+        <div v-if="showDeleteModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div @click="showDeleteModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form @submit.prevent="submitDelete">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <h3 class="text-lg font-medium text-red-600 mb-2">Delete Project</h3>
+                            <p class="text-sm text-gray-500 mb-4">This action is permanent and cannot be undone. All tasks, boards, and data will be destroyed.</p>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Please type <span class="font-bold text-gray-900">{{ $page.props.auth.user.email }}</span> to confirm</label>
+                                    <input v-model="deleteForm.confirm_email" type="email" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm" :placeholder="$page.props.auth.user.email">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="deleteForm.processing || deleteForm.confirm_email !== $page.props.auth.user.email" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50">
+                                Delete Permanently
+                            </button>
+                            <button @click="showDeleteModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
