@@ -129,7 +129,7 @@ class ProjectController extends Controller
 
     public function addMember(Request $request, Project $project)
     {
-        if ($project->owner_id !== Auth::id()) {
+        if ($project->owner_id != Auth::id()) {
             abort(403);
         }
 
