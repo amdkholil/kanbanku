@@ -124,7 +124,7 @@ onUnmounted(() => {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div v-for="project in projects" :key="project.id" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 hover:shadow-md transition-shadow relative" :style="{ borderTopColor: project.color || '#ccc' }">
                         <!-- Project Menu -->
-                        <div v-if="project.owner_id === $page.props.auth.user.id" class="absolute right-2 top-2">
+                        <div v-if="project.owner_id == $page.props.auth.user.id" class="absolute right-2 top-2">
                              <button @click.stop="activeProjectMenu = activeProjectMenu === project.id ? null : project.id" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                      <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
