@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 defineProps({
     projects: Array
@@ -92,6 +92,18 @@ const submitDelete = () => {
         }
     });
 };
+
+const closeMenu = () => {
+    activeProjectMenu.value = null;
+};
+
+onMounted(() => {
+    window.addEventListener('click', closeMenu);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('click', closeMenu);
+});
 </script>
 
 <template>
@@ -113,13 +125,13 @@ const submitDelete = () => {
                     <div v-for="project in projects" :key="project.id" class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 hover:shadow-md transition-shadow relative" :style="{ borderTopColor: project.color || '#ccc' }">
                         <!-- Project Menu -->
                         <div v-if="project.owner_id === $page.props.auth.user.id" class="absolute right-2 top-2">
-                             <button @click="activeProjectMenu = activeProjectMenu === project.id ? null : project.id" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1">
+                             <button @click.stop="activeProjectMenu = activeProjectMenu === project.id ? null : project.id" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1">
                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                      <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                  </svg>
                              </button>
 
-                             <div v-if="activeProjectMenu === project.id" class="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-20 border border-gray-100 py-1">
+                             <div v-if="activeProjectMenu === project.id" @click.stop class="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg z-20 border border-gray-100 py-1">
                                  <button @click="openEditModal(project)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                      Rename Project
                                  </button>

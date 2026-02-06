@@ -2,7 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import draggable from 'vuedraggable';
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -204,6 +204,18 @@ const vFocus = {
   mounted: (el) => el.focus()
 };
 
+const closeMenu = () => {
+    activeColumnMenu.value = null;
+};
+
+onMounted(() => {
+    window.addEventListener('click', closeMenu);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('click', closeMenu);
+});
+
 
 </script>
 
@@ -235,14 +247,14 @@ const vFocus = {
                                 <span class="ml-2 text-xs text-gray-400 font-normal">({{ column.tasks.length }})</span>
                             </h3>
                             <div class="relative">
-                                <button @click="activeColumnMenu = activeColumnMenu === column.id ? null : column.id" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <button @click.stop="activeColumnMenu = activeColumnMenu === column.id ? null : column.id" class="text-gray-400 hover:text-gray-600 focus:outline-none">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                         <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                 </button>
                                 
                                 <!-- Column Menu -->
-                                <div v-if="activeColumnMenu === column.id" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-1">
+                                <div v-if="activeColumnMenu === column.id" @click.stop class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-1">
                                     <button @click="openColumnModal(column)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 italic">
                                         Rename / Change Color
                                     </button>
