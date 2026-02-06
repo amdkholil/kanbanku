@@ -121,7 +121,7 @@ const submitRegister = () => {
                     :class="{ 'opacity-25': loginForm.processing }"
                     :disabled="loginForm.processing"
                 >
-                    Welcome Back
+                    Login
                 </PrimaryButton>
             </div>
         </form>
