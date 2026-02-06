@@ -20,6 +20,7 @@ class ProjectController extends Controller
             ->orWhereHas('members', function ($query) {
                 $query->where('user_id', Auth::id());
             })
+            ->with(['owner', 'members.user'])
             ->latest()
             ->get();
 
@@ -148,6 +149,26 @@ class ProjectController extends Controller
             'user_id' => $userToAdd->id,
             'role' => 'member',
         ]);
+
+        return back();
+    }
+
+    public function removeMember(Project $project, ProjectMember $member)
+    {
+        if ($project->owner_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($member->project_id !== $project->id) {
+            abort(404);
+        }
+
+        // Project owners cannot be removed from their own project this way
+        if ($member->user_id === $project->owner_id) {
+            return back()->withErrors(['member' => 'Project owner cannot be removed.']);
+        }
+
+        $member->delete();
 
         return back();
     }

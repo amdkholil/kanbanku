@@ -10,8 +10,10 @@ defineProps({
 const showModal = ref(false);
 const showEditModal = ref(false);
 const showMemberModal = ref(false);
+const showManageMembersModal = ref(false);
 const showDeleteModal = ref(false);
 const activeProjectMenu = ref(null);
+const selectedProject = ref(null);
 
 const form = useForm({
     name: '',
@@ -78,6 +80,25 @@ const submitMember = () => {
     });
 };
 
+const openManageMembersModal = (project) => {
+    selectedProject.value = project;
+    showManageMembersModal.value = true;
+    activeProjectMenu.value = null;
+};
+
+const removeMember = (project, member) => {
+    if (confirm(`Remove ${member.user.name} from project?`)) {
+        router.delete(route('projects.members.destroy', { project: project.id, member: member.id }), {
+            onSuccess: () => {
+                // Update selectedProject in place if it's the one we're managing
+                if (selectedProject.value && selectedProject.value.id === project.id) {
+                    selectedProject.value.members = selectedProject.value.members.filter(m => m.id !== member.id);
+                }
+            }
+        });
+    }
+};
+
 const openDeleteModal = (project) => {
     deleteForm.id = project.id;
     deleteForm.confirm_email = '';
@@ -138,6 +159,9 @@ onUnmounted(() => {
                                  <button @click="openMemberModal(project)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                      Add Member
                                  </button>
+                                 <button @click="openManageMembersModal(project)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                     Manage Members
+                                 </button>
                                  <div class="border-t border-gray-100 my-1"></div>
                                  <button @click="openDeleteModal(project)" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                                      Delete Project
@@ -149,7 +173,18 @@ onUnmounted(() => {
                             <h3 class="text-lg font-bold pr-6">{{ project.name }}</h3>
                             <p class="text-gray-600 text-sm mt-2 line-clamp-2 h-10">{{ project.description }}</p>
                             
-                            <div class="mt-4 flex justify-end">
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="flex -space-x-2 overflow-hidden">
+                                    <div v-for="member in project.members.slice(0, 5)" :key="member.id" 
+                                         class="h-8 w-8 rounded-full ring-2 ring-white bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-700 uppercase"
+                                         :title="member.user.name">
+                                        {{ member.user.name.charAt(0) }}
+                                    </div>
+                                    <div v-if="project.members.length > 5" 
+                                         class="h-8 w-8 rounded-full ring-2 ring-white bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-600">
+                                        +{{ project.members.length - 5 }}
+                                    </div>
+                                </div>
                                 <Link :href="route('projects.show', project.slug)" class="text-indigo-600 hover:text-indigo-900 font-medium text-sm flex items-center">
                                     Open Board
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -174,7 +209,46 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- Add Member Modal -->
+        <!-- Manage Members Modal -->
+        <div v-if="showManageMembersModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div @click="showManageMembersModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 text-gray-900 border-b border-gray-100">
+                        <h3 class="text-lg font-medium text-gray-900">Manage Members</h3>
+                        <p class="text-xs text-gray-500">{{ selectedProject?.name }}</p>
+                    </div>
+                    <div class="bg-white px-4 py-4 sm:px-6">
+                        <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+                            <div v-for="member in selectedProject?.members" :key="member.id" class="py-3 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700 uppercase">
+                                        {{ member.user.name.charAt(0) }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">{{ member.user.name }}</p>
+                                        <p class="text-xs text-gray-500">{{ member.user.email }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center">
+                                    <span v-if="member.user_id === selectedProject.owner_id" class="text-[10px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50 px-2 py-1 rounded">Owner</span>
+                                    <button v-else @click="removeMember(selectedProject, member)" class="text-xs font-semibold text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                                        Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button @click="showManageMembersModal = false" type="button" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div v-if="showMemberModal" class="fixed inset-0 z-50 overflow-y-auto">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                 <div @click="showMemberModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
