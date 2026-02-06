@@ -112,9 +112,15 @@ const addTask = (columnId) => {
 const activeColumnMenu = ref(null);
 const showColumnModal = ref(false);
 const showBulkImportModal = ref(false);
+const showAddColumnInput = ref(false);
 
 const columnForm = useForm({
     id: null,
+    name: '',
+    color: '#94a3b8'
+});
+
+const addColumnForm = useForm({
     name: '',
     color: '#94a3b8'
 });
@@ -156,6 +162,20 @@ const importTasks = () => {
     });
 };
 
+const addColumn = () => {
+    if (addColumnForm.name.trim() === '') {
+        showAddColumnInput.value = false;
+        return;
+    }
+    
+    addColumnForm.post(route('columns.store', props.board.id), {
+        onSuccess: () => {
+            addColumnForm.reset();
+            showAddColumnInput.value = false;
+        }
+    });
+};
+
 const moveColumn = (columnId, direction) => {
     router.post(route('columns.move', columnId), { direction }, {
         preserveScroll: true,
@@ -184,10 +204,6 @@ const vFocus = {
   mounted: (el) => el.focus()
 };
 
-// Update local state when props change
-watch(() => props.board.columns, (newVal) => {
-    columns.value = newVal;
-}, { deep: true });
 
 </script>
 
@@ -331,8 +347,29 @@ watch(() => props.board.columns, (newVal) => {
                     </div>
 
                     <!-- Add Column -->
-                    <div class="flex-shrink-0 w-80 bg-gray-100/50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors">
-                        <span class="text-gray-500 font-medium">+ Add Section</span>
+                    <div class="flex-shrink-0 w-80">
+                        <div v-if="showAddColumnInput" class="bg-gray-100 rounded-lg p-3 border border-gray-200">
+                            <input 
+                                v-model="addColumnForm.name"
+                                type="text" 
+                                class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500 mb-2"
+                                placeholder="Column name..."
+                                @keyup.enter="addColumn"
+                                @keyup.esc="showAddColumnInput = false"
+                                v-focus
+                            >
+                            <div class="flex space-x-2">
+                                <button @click="addColumn" class="px-3 py-1 bg-indigo-600 text-white rounded text-xs font-medium hover:bg-indigo-700">Add Column</button>
+                                <button @click="showAddColumnInput = false" class="px-3 py-1 bg-white border border-gray-300 rounded text-xs font-medium hover:bg-gray-50 text-gray-700">Cancel</button>
+                            </div>
+                        </div>
+                        <div 
+                            v-else 
+                            @click="showAddColumnInput = true"
+                            class="bg-gray-100/50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors h-14"
+                        >
+                            <span class="text-gray-500 font-medium">+ Add Section</span>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -8,6 +8,25 @@ use Illuminate\Support\Str;
 
 class ColumnController extends Controller
 {
+    public function store(Request $request, \App\Models\Board $board)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'color' => 'nullable|string|max:7',
+        ]);
+
+        $maxPosition = $board->columns()->max('position');
+
+        $board->columns()->create([
+            'name' => $validated['name'],
+            'slug' => Str::slug($validated['name']),
+            'color' => $validated['color'] ?? '#94a3b8',
+            'position' => is_null($maxPosition) ? 0 : $maxPosition + 1,
+        ]);
+
+        return back();
+    }
+
     public function update(Request $request, Column $column)
     {
         $validated = $request->validate([
