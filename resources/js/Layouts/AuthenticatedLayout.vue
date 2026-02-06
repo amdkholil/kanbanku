@@ -22,10 +22,13 @@ const showingNavigationDropdown = ref(false);
                         <div class="flex">
                             <!-- Logo -->
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800"
-                                    />
+                                <Link :href="route('dashboard')" class="flex items-center gap-2 group">
+                                     <div class="bg-blue-600 p-1.5 rounded-lg -rotate-3 group-hover:rotate-0 transition-all duration-300 shadow-md shadow-blue-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                     </div>
+                                     <span class="text-lg font-bold tracking-tight text-slate-800 group-hover:text-blue-600 transition-colors">Kanbanku</span>
                                 </Link>
                             </div>
 

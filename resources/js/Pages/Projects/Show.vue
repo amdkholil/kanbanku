@@ -11,6 +11,18 @@ const props = defineProps({
 });
 
 const localColumns = ref([]);
+const collapsedColumns = ref([]);
+
+const toggleColumnCollapse = (columnId) => {
+    const index = collapsedColumns.value.indexOf(columnId);
+    if (index > -1) {
+        collapsedColumns.value.splice(index, 1);
+    } else {
+        collapsedColumns.value.push(columnId);
+    }
+};
+
+const isCollapsed = (columnId) => collapsedColumns.value.includes(columnId);
 
 // Initialize and watch for prop changes
 watch(() => props.board.columns, (newVal) => {
@@ -239,123 +251,159 @@ onUnmounted(() => {
             <div class="px-4 sm:px-6 lg:px-8 h-full">
                 <div class="flex h-full space-x-4 pb-4">
                     <!-- Columns -->
-                    <div v-for="(column, index) in localColumns" :key="column.id" class="flex-shrink-0 w-80 bg-gray-100 rounded-lg flex flex-col max-h-full border border-gray-200">
-                        <div class="p-4 flex justify-between items-center relative">
-                            <h3 class="font-bold text-gray-700 flex items-center">
-                                <span class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: column.color || '#ccc' }"></span>
-                                {{ column.name }}
-                                <span class="ml-2 text-xs text-gray-400 font-normal">({{ column.tasks.length }})</span>
-                            </h3>
-                            <div class="relative">
-                                <button @click.stop="activeColumnMenu = activeColumnMenu === column.id ? null : column.id" class="text-gray-400 hover:text-gray-600 focus:outline-none">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM18 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </button>
-                                
-                                <!-- Column Menu -->
-                                <div v-if="activeColumnMenu === column.id" @click.stop class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-1">
-                                    <button @click="openColumnModal(column)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 italic">
-                                        Rename / Change Color
-                                    </button>
-                                    <button @click="openBulkImportModal(column)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Import Tasks (Bulk)
-                                    </button>
-                                    <div class="border-t border-gray-100 my-1"></div>
-                                    <button v-if="index > 0" @click="moveColumn(column.id, 'left')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Move Left
-                                    </button>
-                                    <button v-if="index < localColumns.length - 1" @click="moveColumn(column.id, 'right')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                        Move Right
-                                    </button>
-                                </div>
+                    <div v-for="(column, index) in localColumns" :key="column.id" 
+                        class="flex-shrink-0 bg-gray-100 rounded-lg flex flex-col max-h-full border border-gray-200 transition-all duration-300"
+                        :class="isCollapsed(column.id) ? 'w-12 py-2' : 'w-80'"
+                    >
+                        <!-- Collapsed View -->
+                        <div v-if="isCollapsed(column.id)" 
+                             @click="toggleColumnCollapse(column.id)"
+                             class="h-full flex flex-col items-center cursor-pointer hover:bg-gray-200 rounded-lg transition-colors py-4 px-1"
+                             title="Click to expand"
+                        >
+                            <div class="mb-4 pt-2">
+                               <span class="block w-3 h-3 rounded-full" :style="{ backgroundColor: column.color || '#ccc' }"></span>
+                            </div>
+                            <div class="flex-1 flex items-center justify-center min-h-0 overflow-hidden py-4">
+                                 <h3 class="font-bold text-gray-700 whitespace-nowrap text-sm tracking-wide select-none" style="writing-mode: vertical-rl; text-orientation: mixed;">
+                                    {{ column.name }} 
+                                    <span class="text-xs text-gray-500 font-normal ml-1">({{ column.tasks.length }})</span>
+                                 </h3>
+                            </div>
+                            <div class="mt-4 pb-2 text-gray-400">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                      <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l5.293 5.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 13a1 1 0 011-1h1.586l-5.293-5.293a1 1 0 111.414-1.414L16 13.586V12a1 1 0 112 0v4a1 1 0 01-1 1h-4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                 </svg>
                             </div>
                         </div>
 
-                        <!-- Draggable Tasks -->
-                        <draggable 
-                            class="flex-1 overflow-y-auto px-2 space-y-3 pb-4 min-h-[50px]"
-                            :list="column.tasks"
-                            group="tasks"
-                            item-key="id"
-                            @end="onMove"
-                            :data-column-id="column.id"
-                        >
-                            <template #item="{ element }">
-                                <div @click="openEditModal(element)" class="bg-white p-2.5 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative overflow-hidden">
-                                    <div class="absolute left-0 top-0 bottom-0 w-1" :class="{
-                                        'bg-red-500': element.priority === 'urgent',
-                                        'bg-orange-500': element.priority === 'high',
-                                        'bg-blue-500': element.priority === 'medium',
-                                        'bg-gray-300': element.priority === 'low'
-                                    }"></div>
+                        <!-- Expanded View -->
+                        <template v-else>
+                            <div class="p-4 flex justify-between items-center relative">
+                                <h3 class="font-bold text-gray-700 flex items-center">
+                                    <span class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: column.color || '#ccc' }"></span>
+                                    {{ column.name }}
+                                    <span class="ml-2 text-xs text-gray-400 font-normal">({{ column.tasks.length }})</span>
+                                </h3>
+                                <div class="flex items-center">
+                                    <button @click="toggleColumnCollapse(column.id)" class="text-gray-400 hover:text-gray-600 focus:outline-none mr-1 p-1 rounded hover:bg-gray-200" title="Collapse Column">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                        </svg>
+                                    </button>
                                     
-                                    <div class="pl-1.5">
-                                        <div class="flex items-start justify-between gap-2">
-                                            <h4 class="text-xs font-semibold text-gray-900 leading-snug flex-1">{{ element.title }}</h4>
-                                            
-                                            <!-- Status Indicators -->
-                                            <div class="flex-shrink-0 flex space-x-1">
-                                                <span v-if="element.status === 'blocked'" title="Blocked" class="text-red-500">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </span>
-                                                <span v-if="element.status === 'completed'" title="Completed" class="text-green-500">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                                    </svg>
-                                                </span>
-                                            </div>
-                                        </div>
+                                    <div class="relative">
+                                        <button @click.stop="activeColumnMenu = activeColumnMenu === column.id ? null : column.id" class="text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded hover:bg-gray-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                                            </svg>
+                                        </button>
                                         
-                                        <p v-if="element.description" class="text-[10px] text-gray-500 line-clamp-1 mt-1">{{ element.description }}</p>
-                                        
-                                        <div class="mt-2.5 flex items-center justify-between">
-                                            <div class="flex items-center space-x-2">
-                                                <div class="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-700 uppercase">
-                                                    {{ element.creator?.name?.charAt(0) || 'U' }}
-                                                </div>
-                                                <div v-if="element.comments?.length" class="flex items-center text-gray-400 text-[10px]">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                                                    </svg>
-                                                    <span class="font-medium">{{ element.comments.length }}</span>
-                                                </div>
-                                            </div>
-                                            <div v-if="element.due_date" class="flex items-center text-gray-400 text-[9px] font-medium">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                </svg>
-                                                {{ new Date(element.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
-                                            </div>
+                                        <!-- Column Menu -->
+                                        <div v-if="activeColumnMenu === column.id" @click.stop class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border border-gray-200 py-1">
+                                            <button @click="openColumnModal(column)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 italic">
+                                                Rename / Change Color
+                                            </button>
+                                            <button @click="openBulkImportModal(column)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                Import Tasks (Bulk)
+                                            </button>
+                                            <div class="border-t border-gray-100 my-1"></div>
+                                            <button v-if="index > 0" @click="moveColumn(column.id, 'left')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                Move Left
+                                            </button>
+                                            <button v-if="index < localColumns.length - 1" @click="moveColumn(column.id, 'right')" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                Move Right
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </template>
-                        </draggable>
-
-                        <!-- Add Task -->
-                        <div class="p-2 border-t border-gray-200">
-                            <div v-if="showNewTaskInput === column.id">
-                                <textarea 
-                                    v-model="newTaskForm.title"
-                                    class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                    rows="2"
-                                    placeholder="Enter task title..."
-                                    @keyup.enter.prevent="addTask(column.id)"
-                                    @blur="addTask(column.id)"
-                                    v-focus
-                                ></textarea>
                             </div>
-                            <button 
-                                v-else
-                                @click="showNewTaskInput = column.id"
-                                class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-200 rounded-md flex items-center"
+    
+                            <!-- Draggable Tasks -->
+                            <draggable 
+                                class="flex-1 overflow-y-auto px-2 space-y-3 pb-4 min-h-[50px]"
+                                :list="column.tasks"
+                                group="tasks"
+                                item-key="id"
+                                @end="onMove"
+                                :data-column-id="column.id"
                             >
-                                <span class="mr-2 text-lg">+</span> Add a card
-                            </button>
-                        </div>
+                                <template #item="{ element }">
+                                    <div @click="openEditModal(element)" class="bg-white p-2.5 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow relative overflow-hidden">
+                                        <div class="absolute left-0 top-0 bottom-0 w-1" :class="{
+                                            'bg-red-500': element.priority === 'urgent',
+                                            'bg-orange-500': element.priority === 'high',
+                                            'bg-blue-500': element.priority === 'medium',
+                                            'bg-gray-300': element.priority === 'low'
+                                        }"></div>
+                                        
+                                        <div class="pl-1.5">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <h4 class="text-xs font-semibold text-gray-900 leading-snug flex-1">{{ element.title }}</h4>
+                                                
+                                                <!-- Status Indicators -->
+                                                <div class="flex-shrink-0 flex space-x-1">
+                                                    <span v-if="element.status === 'blocked'" title="Blocked" class="text-red-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    </span>
+                                                    <span v-if="element.status === 'completed'" title="Completed" class="text-green-500">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <p v-if="element.description" class="text-[10px] text-gray-500 line-clamp-1 mt-1">{{ element.description }}</p>
+                                            
+                                            <div class="mt-2.5 flex items-center justify-between">
+                                                <div class="flex items-center space-x-2">
+                                                    <div class="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-700 uppercase">
+                                                        {{ element.creator?.name?.charAt(0) || 'U' }}
+                                                    </div>
+                                                    <div v-if="element.comments?.length" class="flex items-center text-gray-400 text-[10px]">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                                                        </svg>
+                                                        <span class="font-medium">{{ element.comments.length }}</span>
+                                                    </div>
+                                                </div>
+                                                <div v-if="element.due_date" class="flex items-center text-gray-400 text-[9px] font-medium">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    {{ new Date(element.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </draggable>
+    
+                            <!-- Add Task -->
+                            <div class="p-2 border-t border-gray-200">
+                                <div v-if="showNewTaskInput === column.id">
+                                    <textarea 
+                                        v-model="newTaskForm.title"
+                                        class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        rows="2"
+                                        placeholder="Enter task title..."
+                                        @keyup.enter.prevent="addTask(column.id)"
+                                        @blur="addTask(column.id)"
+                                        v-focus
+                                    ></textarea>
+                                </div>
+                                <button 
+                                    v-else
+                                    @click="showNewTaskInput = column.id"
+                                    class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-200 rounded-md flex items-center"
+                                >
+                                    <span class="mr-2 text-lg">+</span> Add a card
+                                </button>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- Add Column -->
