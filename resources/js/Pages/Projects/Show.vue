@@ -395,11 +395,13 @@ onUnmounted(() => {
                                                         </svg>
                                                         <span class="font-medium">{{ element.comments.length }}</span>
                                                     </div>
-                                                    <span v-for="flag in element.flags" :key="flag.id" 
-                                                        class="px-1 rounded text-[8px] text-white bg-gray-500"
-                                                        :style="{ backgroundColor: flag.color || '#6b7280' }">
-                                                        {{ flag.name }}
-                                                    </span>
+                                                    <div class="flex items-center space-x-1">
+                                                        <span v-for="flag in element.flags" :key="flag.id" 
+                                                            class="px-1 rounded text-[8px] text-white bg-gray-500"
+                                                            :style="{ backgroundColor: flag.color || '#6b7280' }">
+                                                            {{ flag.name }}
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <div v-if="element.due_date" class="flex items-center text-gray-400 text-[9px] font-medium">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

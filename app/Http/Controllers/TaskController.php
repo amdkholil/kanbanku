@@ -81,8 +81,13 @@ class TaskController extends Controller
         if (!empty($validated['flags'])) {
             $flagNames = array_filter(array_map('trim', explode(',', $validated['flags'])));
             $flagIds = [];
+            $colors = ['#b91c1c', '#1d4ed8', '#047857', '#b45309', '#6d28d9', '#be185d', '#0e7490', '#c2410c', '#4338ca', '#334155'];
+            
             foreach ($flagNames as $name) {
-                $flag = Flag::firstOrCreate(['name' => $name]);
+                $flag = Flag::firstOrCreate(
+                    ['name' => $name],
+                    ['color' => $colors[array_rand($colors)]]
+                );
                 $flagIds[] = $flag->id;
             }
             $task->flags()->sync($flagIds);
@@ -107,8 +112,13 @@ class TaskController extends Controller
         if (isset($validated['flags'])) {
             $flagNames = array_filter(array_map('trim', explode(',', $validated['flags'])));
             $flagIds = [];
+            $colors = ['#b91c1c', '#1d4ed8', '#047857', '#b45309', '#6d28d9', '#be185d', '#0e7490', '#c2410c', '#4338ca', '#334155'];
+
             foreach ($flagNames as $name) {
-                $flag = Flag::firstOrCreate(['name' => $name]);
+                $flag = Flag::firstOrCreate(
+                    ['name' => $name],
+                    ['color' => $colors[array_rand($colors)]]
+                );
                 $flagIds[] = $flag->id;
             }
             $task->flags()->sync($flagIds);
