@@ -261,20 +261,20 @@ onUnmounted(() => {
         </template>
 
         <div class="py-6 h-[calc(100vh-140px)] overflow-x-auto overflow-y-hidden">
-            <div class="px-4 sm:px-6 lg:px-8 h-full">
+            <div class="px-4 sm:px-4 lg:px-4 h-full">
                 <div class="flex h-full space-x-4 pb-4">
                     <!-- Columns -->
                     <div v-for="(column, index) in localColumns" :key="column.id" 
                         class="flex-shrink-0 bg-gray-100 rounded-lg flex flex-col max-h-full border border-gray-200 transition-all duration-300"
-                        :class="isCollapsed(column.id) ? 'w-12 py-2' : 'w-80'"
+                        :class="isCollapsed(column.id) ? 'w-6 py-2' : 'w-80'"
                     >
                         <!-- Collapsed View -->
                         <div v-if="isCollapsed(column.id)" 
                              @click="toggleColumnCollapse(column.id)"
-                             class="h-full flex flex-col items-center cursor-pointer hover:bg-gray-200 rounded-lg transition-colors py-4 px-1"
+                             class="h-full flex flex-col items-center cursor-pointer rounded-lg transition-colors py-4 px-0"
                              title="Click to expand"
                         >
-                            <div class="mb-4 pt-2">
+                            <div class="mb-4 pt-0">
                                <span class="block w-3 h-3 rounded-full" :style="{ backgroundColor: column.color || '#ccc' }"></span>
                             </div>
                             <div class="flex-1 flex items-center justify-center min-h-0 overflow-hidden py-4">
@@ -284,7 +284,7 @@ onUnmounted(() => {
                                  </h3>
                             </div>
                             <div class="mt-4 pb-2 text-gray-400">
-                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                       <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l5.293 5.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 13a1 1 0 011-1h1.586l-5.293-5.293a1 1 0 111.414-1.414L16 13.586V12a1 1 0 112 0v4a1 1 0 01-1 1h-4a1 1 0 01-1-1z" clip-rule="evenodd" />
                                  </svg>
                             </div>
