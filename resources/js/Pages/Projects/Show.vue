@@ -33,7 +33,7 @@ const toggleColumnCollapse = (columnId) => {
 };
 
 const isCollapsed = (columnId) => {
-    const column = localColumns.value.find(c => c.id === columnId);
+    const column = localColumns.value.find(c => c.id == columnId);
     return column ? column.is_colapse : false;
 };
 
