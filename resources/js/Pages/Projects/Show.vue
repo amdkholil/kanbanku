@@ -250,12 +250,12 @@ onUnmounted(() => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2 class="font-semibold text-md text-gray-800 leading-tight">
                     {{ project.name }} / {{ board.name }}
                 </h2>
                 <div class="flex space-x-2">
-                    <button class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50">Filter</button>
-                    <button class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700">Share</button>
+                    <button class="px-4 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50">Filter</button>
+                    <button class="px-4 py-1 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700">Share</button>
                 </div>
             </div>
         </template>
