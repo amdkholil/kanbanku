@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Column;
+use App\Models\Flag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -63,6 +64,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'column_id' => 'required|exists:columns,id',
+            'flags' => 'nullable|string',
         ]);
 
         $maxPosition = Task::where('column_id', $validated['column_id'])->max('position');
@@ -76,6 +78,16 @@ class TaskController extends Controller
             'status' => 'open',
         ]);
 
+        if (!empty($validated['flags'])) {
+            $flagNames = array_filter(array_map('trim', explode(',', $validated['flags'])));
+            $flagIds = [];
+            foreach ($flagNames as $name) {
+                $flag = Flag::firstOrCreate(['name' => $name]);
+                $flagIds[] = $flag->id;
+            }
+            $task->flags()->sync($flagIds);
+        }
+
         return back();
     }
 
@@ -87,9 +99,20 @@ class TaskController extends Controller
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|in:open,in_progress,completed,blocked',
             'due_date' => 'nullable|date',
+            'flags' => 'nullable|string',
         ]);
 
         $task->update($validated);
+
+        if (isset($validated['flags'])) {
+            $flagNames = array_filter(array_map('trim', explode(',', $validated['flags'])));
+            $flagIds = [];
+            foreach ($flagNames as $name) {
+                $flag = Flag::firstOrCreate(['name' => $name]);
+                $flagIds[] = $flag->id;
+            }
+            $task->flags()->sync($flagIds);
+        }
 
         return back();
     }

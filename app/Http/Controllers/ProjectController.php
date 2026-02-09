@@ -86,16 +86,18 @@ class ProjectController extends Controller
         $project->load(['boards' => function ($query) {
             $query->where('is_default', true)->with(['columns' => function ($q) {
                 $q->orderBy('position')->with(['tasks' => function ($tq) {
-                    $tq->orderBy('position')->with(['comments.user']);
+                    $tq->orderBy('position')->with(['comments.user', 'flags']);
                 }]);
             }]);
         }]);
 
         $board = $project->boards->first();
+        $allFlags = \App\Models\Flag::all(['id', 'name', 'color']);
 
         return Inertia::render('Projects/Show', [
             'project' => $project,
-            'board' => $board
+            'board' => $board,
+            'allFlags' => $allFlags
         ]);
     }
 

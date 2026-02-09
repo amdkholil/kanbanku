@@ -7,7 +7,8 @@ import axios from 'axios';
 
 const props = defineProps({
     project: Object,
-    board: Object
+    board: Object,
+    allFlags: Array
 });
 
 const localColumns = ref([]);
@@ -44,7 +45,8 @@ watch(() => props.board.columns, (newVal) => {
 
 const newTaskForm = useForm({
     title: '',
-    column_id: null
+    column_id: null,
+    flags: ''
 });
 
 const selectedTask = ref(null);
@@ -55,7 +57,8 @@ const editTaskForm = useForm({
     description: '',
     priority: 'medium',
     status: 'open',
-    due_date: null
+    due_date: null,
+    flags: ''
 });
 
 const commentForm = useForm({
@@ -73,6 +76,7 @@ const openEditModal = (task) => {
     editTaskForm.priority = task.priority;
     editTaskForm.status = task.status;
     editTaskForm.due_date = task.due_date;
+    editTaskForm.flags = task.flags?.map(f => f.name).join(', ') || '';
     showEditModal.value = true;
 };
 
@@ -371,6 +375,15 @@ onUnmounted(() => {
                                             
                                             <p v-if="element.description" class="text-[10px] text-gray-500 line-clamp-1 mt-1">{{ element.description }}</p>
                                             
+                                            <!-- Flags Display -->
+                                            <!-- <div v-if="element.flags?.length" class="flex flex-wrap gap-1 mt-2">
+                                                <span v-for="flag in element.flags" :key="flag.id" 
+                                                      class="px-1.5 py-0.5 rounded text-[8px] font-bold text-white uppercase bg-gray-500"
+                                                      :style="{ backgroundColor: flag.color || '#6b7280' }">
+                                                    {{ flag.name }}
+                                                </span>
+                                            </div> -->
+                                            
                                             <div class="mt-2.5 flex items-center justify-between">
                                                 <div class="flex items-center space-x-2">
                                                     <div class="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center text-[9px] font-bold text-indigo-700 uppercase">
@@ -382,6 +395,11 @@ onUnmounted(() => {
                                                         </svg>
                                                         <span class="font-medium">{{ element.comments.length }}</span>
                                                     </div>
+                                                    <span v-for="flag in element.flags" :key="flag.id" 
+                                                        class="px-1 rounded text-[8px] text-white bg-gray-500"
+                                                        :style="{ backgroundColor: flag.color || '#6b7280' }">
+                                                        {{ flag.name }}
+                                                    </span>
                                                 </div>
                                                 <div v-if="element.due_date" class="flex items-center text-gray-400 text-[9px] font-medium">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -400,13 +418,21 @@ onUnmounted(() => {
                                 <div v-if="showNewTaskInput === column.id">
                                     <textarea 
                                         v-model="newTaskForm.title"
-                                        class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        class="w-full border-gray-300 rounded-t-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         rows="2"
                                         placeholder="Enter task title..."
                                         @keyup.enter.prevent="addTask(column.id)"
-                                        @blur="addTask(column.id)"
                                         v-focus
                                     ></textarea>
+                                    <div class="relative">
+                                        <input 
+                                            v-model="newTaskForm.flags"
+                                            list="flags-list"
+                                            class="w-full border-t-0 border-gray-300 rounded-b-md shadow-sm text-[10px] focus:border-indigo-500 focus:ring-indigo-500 py-1"
+                                            placeholder="Flags (comma separated)..."
+                                            @keyup.enter.prevent="addTask(column.id)"
+                                        >
+                                    </div>
                                 </div>
                                 <button 
                                     v-else
@@ -497,6 +523,17 @@ onUnmounted(() => {
                                     <label class="block text-sm font-medium text-gray-700">Due Date</label>
                                     <input v-model="editTaskForm.due_date" type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                     <div v-if="editTaskForm.errors.due_date" class="text-red-500 text-xs mt-1">{{ editTaskForm.errors.due_date }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Flags (comma separated)</label>
+                                    <input 
+                                        v-model="editTaskForm.flags" 
+                                        type="text" 
+                                        list="flags-list"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                                        placeholder="e.g. urgent, frontend, bug"
+                                    >
+                                    <div v-if="editTaskForm.errors.flags" class="text-red-500 text-xs mt-1">{{ editTaskForm.errors.flags }}</div>
                                 </div>
 
                                 <!-- Comments Section -->
@@ -648,6 +685,10 @@ onUnmounted(() => {
                 </div>
             </div>
         </div>
+
+        <datalist id="flags-list">
+            <option v-for="flag in allFlags" :key="flag.id" :value="flag.name" />
+        </datalist>
     </AuthenticatedLayout>
 </template>
 

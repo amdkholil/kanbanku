@@ -38,4 +38,9 @@ class Task extends Model
     {
         return $this->hasMany(TaskComment::class);
     }
+
+    public function flags()
+    {
+        return $this->belongsToMany(Flag::class)->withTimestamps();
+    }
 }
