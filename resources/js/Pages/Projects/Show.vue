@@ -11,18 +11,31 @@ const props = defineProps({
 });
 
 const localColumns = ref([]);
-const collapsedColumns = ref([]);
-
 const toggleColumnCollapse = (columnId) => {
-    const index = collapsedColumns.value.indexOf(columnId);
-    if (index > -1) {
-        collapsedColumns.value.splice(index, 1);
-    } else {
-        collapsedColumns.value.push(columnId);
+    const column = localColumns.value.find(c => c.id === columnId);
+    if (column) {
+        column.is_colapse = !column.is_colapse;
+        
+        router.patch(route('columns.update', columnId), {
+            is_colapse: column.is_colapse
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                // In case we want to do something after
+            },
+            onError: (errors) => {
+                console.error('Failed to update column collapse state:', errors);
+                column.is_colapse = !column.is_colapse;
+            }
+        });
     }
 };
 
-const isCollapsed = (columnId) => collapsedColumns.value.includes(columnId);
+const isCollapsed = (columnId) => {
+    const column = localColumns.value.find(c => c.id === columnId);
+    return column ? column.is_colapse : false;
+};
 
 // Initialize and watch for prop changes
 watch(() => props.board.columns, (newVal) => {

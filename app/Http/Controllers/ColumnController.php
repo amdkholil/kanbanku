@@ -32,6 +32,7 @@ class ColumnController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'color' => 'sometimes|nullable|string|max:7',
+            'is_colapse' => 'sometimes|boolean',
         ]);
 
         if (isset($validated['name'])) {

@@ -16,6 +16,11 @@ class Column extends Model
         'slug',
         'color',
         'position',
+        'is_colapse',
+    ];
+
+    protected $casts = [
+        'is_colapse' => 'boolean',
     ];
 
     public function board()
