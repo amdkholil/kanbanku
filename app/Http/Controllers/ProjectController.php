@@ -86,7 +86,7 @@ class ProjectController extends Controller
         $project->load(['boards' => function ($query) {
             $query->where('is_default', true)->with(['columns' => function ($q) {
                 $q->orderBy('position')->with(['tasks' => function ($tq) {
-                    $tq->orderBy('position')->with(['comments.user', 'flags']);
+                    $tq->orderBy('position')->with(['comments.user', 'flags', 'creator']);
                 }]);
             }]);
         }]);
