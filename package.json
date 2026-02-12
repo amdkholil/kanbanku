@@ -9,7 +9,9 @@
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",
         "@tailwindcss/forms": "^0.5.3",
+        "@tailwindcss/typography": "^0.5.19",
         "@tailwindcss/vite": "^4.0.0",
+        "@tiptap/extension-placeholder": "^3.19.0",
         "@vitejs/plugin-vue": "^5.0.0",
         "autoprefixer": "^10.4.12",
         "axios": "^1.11.0",
@@ -21,6 +23,11 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@tiptap/extension-subscript": "^3.19.0",
+        "@tiptap/extension-superscript": "^3.19.0",
+        "@tiptap/extension-underline": "^3.19.0",
+        "@tiptap/starter-kit": "^3.19.0",
+        "@tiptap/vue-3": "^3.19.0",
         "vuedraggable": "^4.1.0"
     }
 }

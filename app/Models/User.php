@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasMany(TaskComment::class);
     }
 
+    public function journals()
+    {
+        return $this->hasMany(Journal::class);
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

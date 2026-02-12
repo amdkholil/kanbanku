@@ -40,6 +40,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/tasks/{task}/comments', [App\Http\Controllers\CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [App\Http\Controllers\CommentController::class, 'destroy'])->name('comments.destroy');
     
+    Route::get('/journals', [App\Http\Controllers\JournalController::class, 'index'])->name('journals.index');
+    Route::post('/journals', [App\Http\Controllers\JournalController::class, 'store'])->name('journals.store');
+    Route::get('/api/journals/dates', [App\Http\Controllers\JournalController::class, 'getDatesByMonth'])->name('api.journals.dates');
+    Route::get('/api/journals/{date}', [App\Http\Controllers\JournalController::class, 'getByDate'])->name('api.journals.show');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

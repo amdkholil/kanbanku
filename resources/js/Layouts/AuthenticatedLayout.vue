@@ -48,6 +48,12 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Projects
                                 </NavLink>
+                                <NavLink
+                                    :href="route('journals.index')"
+                                    :active="route().current('journals.*')"
+                                >
+                                    Journal
+                                </NavLink>
                             </div>
                         </div>
 
@@ -160,6 +166,12 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('projects.*')"
                         >
                             Projects
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('journals.index')"
+                            :active="route().current('journals.*')"
+                        >
+                            Journal
                         </ResponsiveNavLink>
                     </div>
 
