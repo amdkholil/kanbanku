@@ -9,6 +9,10 @@ import Underline from '@tiptap/extension-underline';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 
 const props = defineProps({
     initialJournal: Object,
@@ -44,6 +48,15 @@ onMounted(() => {
                 placeholder: 'Tulis catatan di sini...',
                 emptyEditorClass: 'is-editor-empty',
             }),
+            Table.configure({
+                resizable: true,
+                HTMLAttributes: {
+                    class: 'tiptap-table',
+                },
+            }),
+            TableRow,
+            TableHeader,
+            TableCell,
         ],
         editorProps: {
             attributes: {
@@ -406,6 +419,32 @@ onMounted(() => {
                                     <button @click="editor.chain().focus().toggleCode().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('code') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Code">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                                     </button>
+                                    <div class="w-px h-6 bg-gray-200 mx-1 self-center hidden md:block"></div>
+                                    <!-- Table Controls -->
+                                    <button @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Insert Table">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().addColumnBefore().run()" :disabled="!editor.can().addColumnBefore()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Column Before">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 4h6v16h-6"/><path d="M4 9h6"/><path d="M7 6v6"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().addColumnAfter().run()" :disabled="!editor.can().addColumnAfter()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Column After">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 4H4v16h6"/><path d="M14 9h6"/><path d="M17 6v6"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().deleteColumn().run()" :disabled="!editor.can().deleteColumn()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Column">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 4h6v16h-6"/><line x1="17" y1="9" x2="17" y2="15"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().addRowBefore().run()" :disabled="!editor.can().addRowBefore()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Row Before">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14v6h16v-6"/><path d="M9 4h6"/><path d="M12 7V1"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().addRowAfter().run()" :disabled="!editor.can().addRowAfter()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Row After">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 10V4h16v6"/><path d="M9 14h6"/><path d="M12 17v-6"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().deleteRow().run()" :disabled="!editor.can().deleteRow()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Row">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 10V4h16v6"/><line x1="9" y1="7" x2="15" y2="7"/></svg>
+                                    </button>
+                                    <button @click="editor.chain().focus().deleteTable().run()" :disabled="!editor.can().deleteTable()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Table">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
+                                    </button>
                                 </template>
                             </div>
 
@@ -540,6 +579,52 @@ onMounted(() => {
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
     font-family: monospace;
+}
+
+/* Table styles */
+.tiptap table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    margin: 1rem 0;
+    overflow: hidden;
+    border: 2px solid #e5e7eb;
+    border-radius: 0.5rem;
+}
+
+.tiptap table td,
+.tiptap table th {
+    min-width: 1em;
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 0.75rem;
+    vertical-align: top;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.tiptap table th {
+    font-weight: bold;
+    text-align: left;
+    background-color: #f9fafb;
+    color: #374151;
+}
+
+.tiptap table .selectedCell {
+    background-color: #dbeafe;
+}
+
+.tiptap table .column-resize-handle {
+    position: absolute;
+    right: -2px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #4f46e5;
+    pointer-events: none;
+}
+
+.tiptap table p {
+    margin: 0;
 }
 </style>
 
