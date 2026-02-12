@@ -1,8 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, useForm, router } from '@inertiajs/vue3';
+import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import draggable from 'vuedraggable';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import ProjectHeader from '@/Components/ProjectHeader.vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -57,6 +58,7 @@ const editTaskForm = useForm({
     description: '',
     priority: 'medium',
     status: 'open',
+    column_id: null,
     due_date: null,
     flags: ''
 });
@@ -75,6 +77,7 @@ const openEditModal = (task) => {
     editTaskForm.description = task.description || '';
     editTaskForm.priority = task.priority;
     editTaskForm.status = task.status;
+    editTaskForm.column_id = task.column_id;
     editTaskForm.due_date = task.due_date;
     editTaskForm.flags = task.flags?.map(f => f.name).join(', ') || '';
     showEditModal.value = true;
@@ -142,6 +145,7 @@ const activeColumnMenu = ref(null);
 const showColumnModal = ref(false);
 const showBulkImportModal = ref(false);
 const showAddColumnInput = ref(false);
+const showMemberModal = ref(false);
 
 const columnForm = useForm({
     id: null,
@@ -158,6 +162,24 @@ const bulkImportForm = useForm({
     column_id: null,
     tasks_text: ''
 });
+
+const memberForm = useForm({
+    email: '',
+});
+
+const openMemberModal = () => {
+    memberForm.email = '';
+    showMemberModal.value = true;
+};
+
+const submitMember = () => {
+    memberForm.post(route('projects.members.store', props.project.id), {
+        onSuccess: () => {
+            showMemberModal.value = false;
+            memberForm.reset();
+        }
+    });
+};
 
 const openColumnModal = (column) => {
     columnForm.id = column.id;
@@ -253,15 +275,11 @@ onUnmounted(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-md text-gray-800 leading-tight">
-                    {{ project.name }} / {{ board.name }}
-                </h2>
-                <div class="flex space-x-2">
-                    <button class="px-4 py-1 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50">Filter</button>
-                    <button class="px-4 py-1 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700">Share</button>
-                </div>
-            </div>
+            <ProjectHeader 
+                :project="project" 
+                :board="board" 
+                @open-member-modal="openMemberModal" 
+            />
         </template>
 
         <div class="py-6 h-[calc(100vh-140px)] overflow-x-auto overflow-y-hidden">
@@ -511,14 +529,13 @@ onUnmounted(() => {
                                         <div v-if="editTaskForm.errors.priority" class="text-red-500 text-xs mt-1">{{ editTaskForm.errors.priority }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Status</label>
-                                        <select v-model="editTaskForm.status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                            <option value="open">Open</option>
-                                            <option value="in_progress">In Progress</option>
-                                            <option value="completed">Completed</option>
-                                            <option value="blocked">Blocked</option>
+                                        <label class="block text-sm font-medium text-gray-700">Status (Column)</label>
+                                        <select v-model="editTaskForm.column_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <option v-for="column in localColumns" :key="column.id" :value="column.id">
+                                                {{ column.name }}
+                                            </option>
                                         </select>
-                                        <div v-if="editTaskForm.errors.status" class="text-red-500 text-xs mt-1">{{ editTaskForm.errors.status }}</div>
+                                        <div v-if="editTaskForm.errors.column_id" class="text-red-500 text-xs mt-1">{{ editTaskForm.errors.column_id }}</div>
                                     </div>
                                 </div>
                                 <div>
@@ -691,6 +708,36 @@ onUnmounted(() => {
         <datalist id="flags-list">
             <option v-for="flag in allFlags" :key="flag.id" :value="flag.name" />
         </datalist>
+
+        <!-- Add Member Modal -->
+        <div v-if="showMemberModal" class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div @click="showMemberModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form @submit.prevent="submitMember">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 text-gray-900">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4">Add Member to {{ project.name }}</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Member Email</label>
+                                    <input v-model="memberForm.email" type="email" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="user@example.com" v-focus>
+                                    <div v-if="memberForm.errors.email" class="text-red-500 text-xs mt-1">{{ memberForm.errors.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="memberForm.processing" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                Invite Member
+                            </button>
+                            <button @click="showMemberModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </AuthenticatedLayout>
 </template>
 

@@ -89,12 +89,34 @@ class ProjectController extends Controller
                     $tq->orderBy('position')->with(['comments.user', 'flags', 'creator']);
                 }]);
             }]);
-        }]);
+        }])
+        ->load('members.user');
 
         $board = $project->boards->first();
         $allFlags = \App\Models\Flag::all(['id', 'name', 'color']);
 
         return Inertia::render('Projects/Show', [
+            'project' => $project,
+            'board' => $board,
+            'allFlags' => $allFlags
+        ]);
+    }
+
+    public function listView(Project $project)
+    {
+        $project->load(['boards' => function ($query) {
+            $query->where('is_default', true)->with(['columns' => function ($q) {
+                $q->orderBy('position')->with(['tasks' => function ($tq) {
+                    $tq->orderBy('position')->with(['comments.user', 'flags', 'creator']);
+                }]);
+            }]);
+        }])
+        ->load('members.user');
+
+        $board = $project->boards->first();
+        $allFlags = \App\Models\Flag::all(['id', 'name', 'color']);
+
+        return Inertia::render('Projects/ListView', [
             'project' => $project,
             'board' => $board,
             'allFlags' => $allFlags

@@ -102,10 +102,25 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high,urgent',
-            'status' => 'required|in:open,in_progress,completed,blocked',
+            'status' => 'nullable|string',
+            'column_id' => 'required|exists:columns,id',
             'due_date' => 'nullable|date',
             'flags' => 'nullable|string',
         ]);
+
+        $oldColumnId = $task->column_id;
+        $newColumnId = $validated['column_id'];
+
+        if ($oldColumnId != $newColumnId) {
+            // Shift tasks down in old column
+            Task::where('column_id', $oldColumnId)
+                ->where('position', '>', $task->position)
+                ->decrement('position');
+
+            // Move to end of new column
+            $maxPosition = Task::where('column_id', $newColumnId)->max('position');
+            $validated['position'] = ($maxPosition !== null) ? $maxPosition + 1 : 0;
+        }
 
         $task->update($validated);
 
