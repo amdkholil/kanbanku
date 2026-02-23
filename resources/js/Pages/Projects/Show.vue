@@ -5,6 +5,7 @@ import draggable from 'vuedraggable';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import ProjectHeader from '@/Components/ProjectHeader.vue';
 import axios from 'axios';
+import TiptapEditor from '@/Components/TiptapEditor.vue';
 
 const props = defineProps({
     project: Object,
@@ -46,7 +47,10 @@ watch(() => props.board.columns, (newVal) => {
 
 const newTaskForm = useForm({
     title: '',
+    description: '',
     column_id: null,
+    priority: 'medium',
+    due_date: null,
     flags: ''
 });
 
@@ -67,7 +71,7 @@ const commentForm = useForm({
     comment: ''
 });
 
-const showNewTaskInput = ref(null);
+const showNewTaskModal = ref(false);
 const showEditModal = ref(false);
 
 const openEditModal = (task) => {
@@ -81,6 +85,12 @@ const openEditModal = (task) => {
     editTaskForm.due_date = task.due_date;
     editTaskForm.flags = task.flags?.map(f => f.name).join(', ') || '';
     showEditModal.value = true;
+};
+
+const openAddTaskModal = (columnId) => {
+    newTaskForm.reset();
+    newTaskForm.column_id = columnId;
+    showNewTaskModal.value = true;
 };
 
 const updateTask = () => {
@@ -126,17 +136,13 @@ const deleteTask = () => {
     }
 };
 
-const addTask = (columnId) => {
-    if (newTaskForm.title.trim() === '') {
-        showNewTaskInput.value = null;
-        return;
-    }
+const addTask = () => {
+    if (newTaskForm.title.trim() === '') return;
     
-    newTaskForm.column_id = columnId;
     newTaskForm.post(route('tasks.store'), {
         onSuccess: () => {
             newTaskForm.reset();
-            showNewTaskInput.value = null;
+            showNewTaskModal.value = false;
         }
     });
 };
@@ -268,6 +274,11 @@ onUnmounted(() => {
 });
 
 
+const stripHtml = (html) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+};
+
 </script>
 
 <template>
@@ -391,7 +402,7 @@ onUnmounted(() => {
                                                 </div>
                                             </div>
                                             
-                                            <p v-if="element.description" class="text-[10px] text-gray-500 line-clamp-1 mt-1">{{ element.description }}</p>
+                                            <p v-if="element.description" class="text-[10px] text-gray-500 line-clamp-1 mt-1">{{ stripHtml(element.description) }}</p>
                                             
                                             <!-- Flags Display -->
                                             <!-- <div v-if="element.flags?.length" class="flex flex-wrap gap-1 mt-2">
@@ -435,31 +446,12 @@ onUnmounted(() => {
     
                             <!-- Add Task -->
                             <div class="p-2 border-t border-gray-200">
-                                <div v-if="showNewTaskInput === column.id">
-                                    <textarea 
-                                        v-model="newTaskForm.title"
-                                        class="w-full border-gray-300 rounded-t-md shadow-sm text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                        rows="2"
-                                        placeholder="Enter task title..."
-                                        @keyup.enter.prevent="addTask(column.id)"
-                                        v-focus
-                                    ></textarea>
-                                    <div class="relative">
-                                        <input 
-                                            v-model="newTaskForm.flags"
-                                            list="flags-list"
-                                            class="w-full border-t-0 border-gray-300 rounded-b-md shadow-sm text-[10px] focus:border-indigo-500 focus:ring-indigo-500 py-1"
-                                            placeholder="Flags (comma separated)..."
-                                            @keyup.enter.prevent="addTask(column.id)"
-                                        >
-                                    </div>
-                                </div>
                                 <button 
-                                    v-else
-                                    @click="showNewTaskInput = column.id"
-                                    class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-200 rounded-md flex items-center"
+                                    @click="openAddTaskModal(column.id)"
+                                    class="w-full text-left px-3 py-2 text-sm text-gray-500 hover:bg-gray-200 rounded-md flex items-center group transition-colors"
                                 >
-                                    <span class="mr-2 text-lg">+</span> Add a card
+                                    <span class="mr-2 text-lg text-gray-400 group-hover:text-indigo-600">+</span> 
+                                    <span class="font-medium group-hover:text-gray-700">Add a card</span>
                                 </button>
                             </div>
                         </template>
@@ -514,8 +506,12 @@ onUnmounted(() => {
                                     <div v-if="editTaskForm.errors.title" class="text-red-500 text-xs mt-1">{{ editTaskForm.errors.title }}</div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Description</label>
-                                    <textarea v-model="editTaskForm.description" rows="4" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Add a more detailed description..."></textarea>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <TiptapEditor 
+                                        v-model="editTaskForm.description" 
+                                        placeholder="Add a more detailed description..."
+                                        min-height="250px"
+                                    />
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
@@ -618,6 +614,77 @@ onUnmounted(() => {
                                 Delete Task
                             </button>
                             <button @click="showEditModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Task Modal -->
+        <div v-if="showNewTaskModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div @click="showNewTaskModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <form @submit.prevent="addTask">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 text-gray-900">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
+                                Create New Task
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Task Title</label>
+                                    <input v-model="newTaskForm.title" type="text" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="What needs to be done?">
+                                    <div v-if="newTaskForm.errors.title" class="text-red-500 text-xs mt-1">{{ newTaskForm.errors.title }}</div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <TiptapEditor 
+                                        v-model="newTaskForm.description" 
+                                        placeholder="Add more details about this task..."
+                                        min-height="150px"
+                                    />
+                                    <div v-if="newTaskForm.errors.description" class="text-red-500 text-xs mt-1">{{ newTaskForm.errors.description }}</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Priority</label>
+                                        <select v-model="newTaskForm.priority" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                        <div v-if="newTaskForm.errors.priority" class="text-red-500 text-xs mt-1">{{ newTaskForm.errors.priority }}</div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Due Date</label>
+                                        <input v-model="newTaskForm.due_date" type="date" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <div v-if="newTaskForm.errors.due_date" class="text-red-500 text-xs mt-1">{{ newTaskForm.errors.due_date }}</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Flags (comma separated)</label>
+                                    <input 
+                                        v-model="newTaskForm.flags" 
+                                        type="text" 
+                                        list="flags-list"
+                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                                        placeholder="e.g. urgent, frontend, bug"
+                                    >
+                                    <div v-if="newTaskForm.errors.flags" class="text-red-500 text-xs mt-1">{{ newTaskForm.errors.flags }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="submit" :disabled="newTaskForm.processing" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                Create Task
+                            </button>
+                            <button @click="showNewTaskModal = false" type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
                                 Cancel
                             </button>
                         </div>

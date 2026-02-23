@@ -13,6 +13,9 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
+import { Color } from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Highlight } from '@tiptap/extension-highlight';
 
 const props = defineProps({
     initialJournal: Object,
@@ -48,6 +51,9 @@ onMounted(() => {
                 placeholder: 'Tulis catatan di sini...',
                 emptyEditorClass: 'is-editor-empty',
             }),
+            Color,
+            TextStyle,
+            Highlight.configure({ multicolor: true }),
             Table.configure({
                 resizable: true,
                 HTMLAttributes: {
@@ -360,7 +366,7 @@ onMounted(() => {
                     <div class="w-full md:w-2/3">
                         <div class="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 flex flex-col min-h-[500px] overflow-hidden">
                             <!-- Header -->
-                            <div class="px-4 md:px-6 py-3 md:py-4 flex justify-between items-center border-b bg-gray-50/50">
+                            <div class="px-4 md:px-6 py-2 md:py-3 flex justify-between items-center border-b bg-gray-50/50">
                                 <h2 class="text-sm md:text-lg font-semibold text-gray-800">
                                     <span class="hidden md:inline">Catatan: </span>{{ formattedDate }}
                                 </h2>
@@ -374,76 +380,87 @@ onMounted(() => {
                             </div>
                             
                             <!-- Tiptap Toolbar -->
-                            <div v-if="editor" class="flex overflow-x-auto gap-1 p-2 border-b bg-white hide-scrollbar md:flex-wrap sticky top-0 z-20">
+                            <div v-if="editor" class="flex overflow-x-auto gap-1 px-2 py-0 border-b bg-slate-50 hide-scrollbar md:flex-wrap sticky top-0 z-20">
                                 <!-- Desktop Toolbar (full) -->
                                 <template v-if="true">
-                                    <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 1 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0" title="H1">
-                                        <span class="font-bold text-xs md:text-sm">H1</span>
+                                    <button @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 1 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 md:inline" title="H1">
+                                        <span class="font-bold text-[8pt] md:text-[9pt]">H1</span>
                                     </button>
-                                    <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 2 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="H2">
-                                        <span class="font-bold text-xs md:text-sm">H2</span>
+                                    <button @click="editor.chain().focus().toggleHeading({ level: 2 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 2 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="H2">
+                                        <span class="font-bold text-[8pt] md:text-[9pt]">H2</span>
                                     </button>
-                                    <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 3 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="H3">
-                                        <span class="font-bold text-xs md:text-sm">H3</span>
+                                    <button @click="editor.chain().focus().toggleHeading({ level: 3 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 3 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="H3">
+                                        <span class="font-bold text-[8pt] md:text-[9pt]">H3</span>
                                     </button>
-                                    <button @click="editor.chain().focus().toggleHeading({ level: 4 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 4 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="H4">
-                                        <span class="font-bold text-xs md:text-sm">H4</span>
+                                    <button @click="editor.chain().focus().toggleHeading({ level: 4 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 4 }) }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="H4">
+                                        <span class="font-bold text-[8pt] md:text-[9pt]">H4</span>
                                     </button>
                                     <div class="w-px h-6 bg-gray-200 mx-1 self-center hidden md:block"></div>
                                     <button @click="editor.chain().focus().toggleBold().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('bold') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0" title="Bold">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>
+                                        <strong>B</strong>
                                     </button>
                                     <button @click="editor.chain().focus().toggleItalic().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('italic') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0" title="Italic">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
                                     </button>
                                     <button @click="editor.chain().focus().toggleUnderline().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('underline') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0" title="Underline">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
                                     </button>
                                     <button @click="editor.chain().focus().toggleStrike().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('strike') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Strike">
-                                        <del>S&nbsp;</del>
+                                        <del><pre>s</pre></del>
                                     </button>
                                     <div class="w-px h-6 bg-gray-200 mx-1 self-center hidden md:block"></div>
-                                    <button @click="editor.chain().focus().toggleSubscript().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('subscript') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Subscript">
-                                        <span class="text-xs font-bold">X<sub>2</sub></span>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <div class="relative group flex items-center p-1 rounded hover:bg-gray-100 transition-colors" title="Font Color">
+                                            <input type="color" @input="editor.chain().focus().setColor($event.target.value).run()" :value="editor.getAttributes('textStyle').color || '#000000'" class="w-4 h-4 p-0 border-0 bg-transparent cursor-pointer">
+                                            <span class="ml-1 text-[8px] md:text-[9px] font-bold text-gray-500">A</span>
+                                        </div>
+                                        <div class="relative group flex items-center p-1 rounded hover:bg-gray-100 transition-colors" title="Highlight Color">
+                                            <input type="color" @input="editor.chain().focus().toggleHighlight({ color: $event.target.value }).run()" :value="editor.getAttributes('highlight').color || '#ffff00'" class="w-4 h-4 p-0 border-0 bg-transparent cursor-pointer">
+                                            <span class="ml-1 text-[8px] md:text-[9px] font-bold text-gray-500">H</span>
+                                        </div>
+                                    </div>
+                                    <div class="w-px h-6 bg-gray-200 mx-1 self-center hidden md:block"></div>
+                                    <button @click="editor.chain().focus().toggleSubscript().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('subscript') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="Subscript">
+                                        <span class="text-[9pt]">X<sub>2</sub></span>
                                     </button>
-                                    <button @click="editor.chain().focus().toggleSuperscript().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('superscript') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Superscript">
-                                        <span class="text-xs font-bold">X<sup>2</sup></span>
+                                    <button @click="editor.chain().focus().toggleSuperscript().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('superscript') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="Superscript">
+                                        <span class="text-[9pt]">X<sup>2</sup></span>
                                     </button>
                                     <div class="w-px h-6 bg-gray-200 mx-1 self-center hidden md:block"></div>
                                     <button @click="editor.chain().focus().toggleBulletList().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('bulletList') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0" title="Bullet List">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                                     </button>
                                     <button @click="editor.chain().focus().toggleOrderedList().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('orderedList') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0" title="Ordered List">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().toggleCode().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('code') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Code">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                    <button @click="editor.chain().focus().toggleCode().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('code') }" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="Code">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
                                     </button>
                                     <div class="w-px h-6 bg-gray-200 mx-1 self-center hidden md:block"></div>
                                     <!-- Table Controls -->
-                                    <button @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex" title="Insert Table">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                                    <button @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline" title="Insert Table">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().addColumnBefore().run()" :disabled="!editor.can().addColumnBefore()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Column Before">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 4h6v16h-6"/><path d="M4 9h6"/><path d="M7 6v6"/></svg>
+                                    <button @click="editor.chain().focus().addColumnBefore().run()" :disabled="!editor.can().addColumnBefore()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Add Column Before">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 4h6v16h-6"/><path d="M4 9h6"/><path d="M7 6v6"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().addColumnAfter().run()" :disabled="!editor.can().addColumnAfter()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Column After">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 4H4v16h6"/><path d="M14 9h6"/><path d="M17 6v6"/></svg>
+                                    <button @click="editor.chain().focus().addColumnAfter().run()" :disabled="!editor.can().addColumnAfter()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Add Column After">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 4H4v16h6"/><path d="M14 9h6"/><path d="M17 6v6"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().deleteColumn().run()" :disabled="!editor.can().deleteColumn()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Column">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 4h6v16h-6"/><line x1="17" y1="9" x2="17" y2="15"/></svg>
+                                    <button @click="editor.chain().focus().deleteColumn().run()" :disabled="!editor.can().deleteColumn()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Column">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 4h6v16h-6"/><line x1="17" y1="9" x2="17" y2="15"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().addRowBefore().run()" :disabled="!editor.can().addRowBefore()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Row Before">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14v6h16v-6"/><path d="M9 4h6"/><path d="M12 7V1"/></svg>
+                                    <button @click="editor.chain().focus().addRowBefore().run()" :disabled="!editor.can().addRowBefore()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Add Row Before">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 14v6h16v-6"/><path d="M9 4h6"/><path d="M12 7V1"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().addRowAfter().run()" :disabled="!editor.can().addRowAfter()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Add Row After">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 10V4h16v6"/><path d="M9 14h6"/><path d="M12 17v-6"/></svg>
+                                    <button @click="editor.chain().focus().addRowAfter().run()" :disabled="!editor.can().addRowAfter()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Add Row After">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 10V4h16v6"/><path d="M9 14h6"/><path d="M12 17v-6"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().deleteRow().run()" :disabled="!editor.can().deleteRow()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Row">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 10V4h16v6"/><line x1="9" y1="7" x2="15" y2="7"/></svg>
+                                    <button @click="editor.chain().focus().deleteRow().run()" :disabled="!editor.can().deleteRow()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Row">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 10V4h16v6"/><line x1="9" y1="7" x2="15" y2="7"/></svg>
                                     </button>
-                                    <button @click="editor.chain().focus().deleteTable().run()" :disabled="!editor.can().deleteTable()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline-flex disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Table">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
+                                    <button @click="editor.chain().focus().deleteTable().run()" :disabled="!editor.can().deleteTable()" class="p-1.5 md:p-1.5 rounded hover:bg-gray-100 transition-colors shrink-0 hidden md:inline disabled:opacity-30 disabled:cursor-not-allowed" title="Delete Table">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>
                                     </button>
                                 </template>
                             </div>
@@ -451,7 +468,7 @@ onMounted(() => {
                             <!-- Editor Content (Single Instance) -->
                             <editor-content 
                                 :editor="editor" 
-                                class="flex-grow overflow-y-auto bg-white cursor-text relative p-2 md:px-4 md:py-3" 
+                                class="flex-grow overflow-y-auto bg-white cursor-text relative p-2 md:px-3 md:py-3" 
                                 @click="handleEditorClick" 
                                 tabindex="0"
                             />
@@ -625,6 +642,11 @@ onMounted(() => {
 
 .tiptap table p {
     margin: 0;
+}
+
+.tiptap mark {
+    background-color: #ffe066;
+    padding: 0.1rem 0;
 }
 </style>
 
