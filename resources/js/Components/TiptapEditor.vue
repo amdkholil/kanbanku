@@ -12,6 +12,8 @@ import { TableCell } from '@tiptap/extension-table-cell';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Highlight } from '@tiptap/extension-highlight';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
 import { watch, onBeforeUnmount } from 'vue';
 
 const props = defineProps({
@@ -59,6 +61,10 @@ const editor = useEditor({
         TableRow,
         TableHeader,
         TableCell,
+        TaskList,
+        TaskItem.configure({
+            nested: true,
+        }),
     ],
     editorProps: {
         attributes: {
@@ -134,6 +140,9 @@ const handleEditorClick = () => {
             </button>
             <button type="button" @click="editor.chain().focus().toggleCodeBlock().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('codeBlock') }" class="p-1.5 rounded hover:bg-gray-200 transition-colors" title="Code Block">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+            </button>
+            <button type="button" @click="editor.chain().focus().toggleTaskList().run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('taskList') }" class="p-1.5 rounded hover:bg-gray-200 transition-colors" title="Task List">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
             </button>
             <div class="w-px h-6 bg-gray-200 mx-1 self-center"></div>
             <button type="button" @click="editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()" class="p-1.5 rounded hover:bg-gray-200 transition-colors" title="Insert Table">
@@ -261,5 +270,47 @@ const handleEditorClick = () => {
 
 .tiptap table .selectedCell {
     background-color: #dbeafe;
+}
+
+/* Task List styles */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0rem;
+  margin-top: 0;
+}
+
+.tiptap ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  user-select: none;
+  margin-right: 0.5rem;
+  margin-top: 0rem;
+}
+
+.tiptap ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+
+.tiptap ul[data-type="taskList"] input[type="checkbox"] {
+  cursor: pointer;
+  width: 0.7rem;
+  height: 0.7rem;
+  accent-color: #4f46e5;
+}
+
+.tiptap ul[data-type="taskList"] li[data-checked="true"] > div > p {
+  text-decoration: line-through;
+  color: #7c7f89;
+}
+
+.tiptap ul[data-type="taskList"] li > div > p {
+    margin: 0 !important;
+    padding: 0 !important;
 }
 </style>
