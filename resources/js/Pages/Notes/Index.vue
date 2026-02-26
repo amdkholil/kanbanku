@@ -189,10 +189,12 @@ onMounted(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight shrink-0">My Notes</h2>
+            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <h2 class="font-semibold text-xl text-gray-800 leading-tight shrink-0">My Notes</h2>
+                </div>
 
-                <div class="flex-1 max-w-md relative">
+                <div class="flex-1 w-full order-last md:order-none md:max-w-md relative">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -203,14 +205,15 @@ onMounted(() => {
                         class="block w-full pl-10 pr-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 shadow-sm" />
                 </div>
 
-                <div class="flex items-center gap-2">
-                    <template v-if="activeId">
+                <div class="flex items-center gap-2 justify-between md:justify-end">
+                    <div class="flex items-center gap-2">
+                        <template v-if="activeId">
                         <div v-if="form.isDirty"
                             class="flex items-center gap-1.5 px-2 py-1 rounded-full bg-indigo-50 text-[10px] text-indigo-600 font-medium animate-pulse border border-indigo-100 mr-2">
                             <span class="w-1 h-1 rounded-full bg-indigo-600"></span>
                             Menyimpan
                         </div>
-                        <div v-else class="w-[88px]"></div>
+                        <div v-else class="w-0 md:w-[88px]"></div>
                         <button @click="toggleFavorite(activeNote)" :class="[
                             'p-2 rounded-lg transition-colors border',
                             activeNote.is_favorite ? 'text-yellow-500 bg-yellow-50 border-yellow-100' : 'text-gray-400 hover:bg-gray-50 border-gray-100'
@@ -229,19 +232,23 @@ onMounted(() => {
                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
-                        <div class="w-px h-6 bg-gray-200 mx-2"></div>
-                    </template>
+                            <div class="w-px h-6 bg-gray-200 mx-2"></div>
+                        </template>
+                    </div>
                     <button @click="createNewNote"
-                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
+                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm whitespace-nowrap">
                         New Note
                     </button>
                 </div>
             </div>
         </template>
 
-        <div class="flex h-[calc(100vh-120px)] overflow-hidden max-w-7xl mx-auto py-4">
+        <div class="flex h-[calc(100vh-140px)] md:h-[calc(100vh-120px)] overflow-hidden max-w-7xl mx-auto py-4 px-2 sm:px-4 gap-4">
             <!-- Sidebar -->
-            <aside class="w-80 bg-white flex flex-col flex-shrink-0 m-2 rounded-lg">
+            <aside :class="[
+                'w-full md:w-80 bg-white flex-col flex-shrink-0 rounded-lg shadow-sm border border-gray-100',
+                activeId ? 'hidden md:flex' : 'flex'
+            ]">
                 <!-- Tabs -->
                 <div class="p-4 border-b">
                     <div class="flex gap-1">
@@ -330,15 +337,23 @@ onMounted(() => {
             </aside>
 
             <!-- Editor Main Area -->
-            <main class="flex-1 flex flex-col min-w-0 bg-white m-2 rounded-lg">
+            <main :class="[
+                'flex-1 flex-col min-w-0 bg-white rounded-lg shadow-sm border border-gray-100',
+                activeId ? 'flex' : 'hidden md:flex'
+            ]">
                 <template v-if="activeId">
                     <!-- Editor Content -->
                     <div class="flex-1 overflow-y-auto">
-                        <div class="max-w-4xl mx-auto px-8 py-6">
+                        <div class="max-w-4xl mx-auto px-4 md:px-8 py-6">
                             <!-- Title -->
-                            <div class="border-b border-gray-300 mb-6 pb-2">
+                            <div class="border-b border-gray-300 mb-6 pb-2 flex items-center gap-2">
+                                <button @click="activeId = null" class="md:hidden p-1 text-gray-500 hover:bg-gray-100 rounded-lg shrink-0">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                </button>
                                 <input v-model="form.title" type="text" placeholder="Judul Catatan..."
-                                    class="w-full text-xl font-bold border-none focus:ring-0 px-2 py-0 placeholder-gray-300" />
+                                    class="w-full text-xl font-bold border-none focus:ring-0 px-1 py-0 placeholder-gray-300" />
                             </div>
 
                             <!-- Tiptap Editor -->
