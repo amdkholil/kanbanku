@@ -299,7 +299,7 @@ onMounted(() => {
                     <!-- Calendar Section -->
                     <div class="w-full md:w-1/3">
                         <!-- Desktop Calendar -->
-                        <div class="hidden md:block bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
+                        <div class="hidden md:block bg-white p-6 rounded-lg shadow-sm h-fit">
                             <div class="flex gap-2 mb-4">
                                 <select v-model="selectedMonth" class="border-gray-300 rounded-md p-2 flex-1 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer text-sm font-medium">
                                     <option v-for="(m, index) in months" :key="index" :value="index">{{ m }}</option>
@@ -370,7 +370,7 @@ onMounted(() => {
 
                     <!-- Editor Section -->
                     <div class="w-full md:w-2/3">
-                        <div class="bg-white rounded-lg md:rounded-xl shadow-sm border border-gray-200 flex flex-col min-h-[500px] overflow-hidden">
+                        <div class="bg-white rounded-lg md:rounded-xl shadow-sm flex flex-col min-h-[500px] overflow-hidden">
                             <!-- Header -->
                             <div class="px-4 md:px-6 py-2 md:py-3 flex justify-between items-center border-b bg-gray-50/50">
                                 <h2 class="text-sm md:text-lg font-semibold text-gray-800">

@@ -46,6 +46,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/journals/dates', [App\Http\Controllers\JournalController::class, 'getDatesByMonth'])->name('api.journals.dates');
     Route::get('/api/journals/{date}', [App\Http\Controllers\JournalController::class, 'getByDate'])->name('api.journals.show');
     
+    Route::get('/notes', [App\Http\Controllers\NoteController::class, 'index'])->name('notes.index');
+    Route::post('/notes', [App\Http\Controllers\NoteController::class, 'store'])->name('notes.store');
+    Route::patch('/notes/{note}', [App\Http\Controllers\NoteController::class, 'update'])->name('notes.update');
+    Route::delete('/notes/{note}', [App\Http\Controllers\NoteController::class, 'destroy'])->name('notes.destroy');
+    Route::patch('/notes/{note}/favorite', [App\Http\Controllers\NoteController::class, 'toggleFavorite'])->name('notes.favorite');
+    Route::patch('/notes/{note}/toggle-preview', [App\Http\Controllers\NoteController::class, 'togglePreview'])->name('notes.preview.toggle');
+    
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

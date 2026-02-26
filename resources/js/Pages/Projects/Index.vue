@@ -1,7 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import { ref, onMounted, onUnmounted } from 'vue';
+import Swal from 'sweetalert2';
 
 defineProps({
     projects: Array
@@ -87,16 +88,27 @@ const openManageMembersModal = (project) => {
 };
 
 const removeMember = (project, member) => {
-    if (confirm(`Remove ${member.user.name} from project?`)) {
-        router.delete(route('projects.members.destroy', { project: project.id, member: member.id }), {
-            onSuccess: () => {
-                // Update selectedProject in place if it's the one we're managing
-                if (selectedProject.value && selectedProject.value.id === project.id) {
-                    selectedProject.value.members = selectedProject.value.members.filter(m => m.id !== member.id);
+    Swal.fire({
+        title: 'Keluarkan anggota?',
+        text: `Keluarkan ${member.user.name} dari proyek ini?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: 'Ya, keluarkan!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            router.delete(route('projects.members.destroy', { project: project.id, member: member.id }), {
+                onSuccess: () => {
+                    // Update selectedProject in place if it's the one we're managing
+                    if (selectedProject.value && selectedProject.value.id === project.id) {
+                        selectedProject.value.members = selectedProject.value.members.filter(m => m.id !== member.id);
+                    }
                 }
-            }
-        });
-    }
+            });
+        }
+    });
 };
 
 const openDeleteModal = (project) => {

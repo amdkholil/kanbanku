@@ -37,6 +37,7 @@
         "@tiptap/extension-underline": "^3.19.0",
         "@tiptap/starter-kit": "^3.19.0",
         "@tiptap/vue-3": "^3.19.0",
+        "sweetalert2": "^11.26.20",
         "vuedraggable": "^4.1.0"
     }
 }

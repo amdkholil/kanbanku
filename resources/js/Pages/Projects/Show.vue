@@ -4,6 +4,7 @@ import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import draggable from 'vuedraggable';
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import ProjectHeader from '@/Components/ProjectHeader.vue';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 import TiptapEditor from '@/Components/TiptapEditor.vue';
 
@@ -115,25 +116,47 @@ const addComment = () => {
 };
 
 const deleteComment = (commentId) => {
-    if (confirm('Delete this comment?')) {
-        commentForm.delete(route('comments.destroy', commentId), {
-            preserveScroll: true,
-            onSuccess: () => {
-                 const updatedTask = props.board.columns.flatMap(c => c.tasks).find(t => t.id === editTaskForm.id);
-                 if (updatedTask) selectedTask.value = updatedTask;
-            }
-        });
-    }
+    Swal.fire({
+        title: 'Hapus komentar?',
+        text: "Komentar yang dihapus tidak dapat dikembalikan.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            commentForm.delete(route('comments.destroy', commentId), {
+                preserveScroll: true,
+                onSuccess: () => {
+                     const updatedTask = props.board.columns.flatMap(c => c.tasks).find(t => t.id === editTaskForm.id);
+                     if (updatedTask) selectedTask.value = updatedTask;
+                }
+            });
+        }
+    });
 };
 
 const deleteTask = () => {
-    if (confirm('Are you sure you want to delete this task?')) {
-        editTaskForm.delete(route('tasks.destroy', editTaskForm.id), {
-            onSuccess: () => {
-                showEditModal.value = false;
-            }
-        });
-    }
+    Swal.fire({
+        title: 'Hapus tugas?',
+        text: "Tugas yang dihapus tidak dapat dikembalikan.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#9ca3af',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            editTaskForm.delete(route('tasks.destroy', editTaskForm.id), {
+                onSuccess: () => {
+                    showEditModal.value = false;
+                }
+            });
+        }
+    });
 };
 
 const addTask = () => {

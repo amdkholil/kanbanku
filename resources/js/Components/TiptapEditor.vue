@@ -31,7 +31,7 @@ const props = defineProps({
     },
     minHeight: {
         type: String,
-        default: '150px',
+        default: '250px',
     }
 });
 
@@ -98,7 +98,7 @@ const handleEditorClick = () => {
 </script>
 
 <template>
-    <div class="tiptap-editor-container border border-gray-300 rounded-md overflow-hidden bg-white flex flex-col">
+    <div class="tiptap-editor-container border border-gray-300 rounded-md overflow-hidden bg-white flex flex-col" :style="{ minHeight: minHeight }">
         <!-- Tiptap Toolbar -->
         <div v-if="editor && editable" class="flex flex-wrap gap-0.5 px-1.5 border-b bg-gray-50 flex-none sticky top-0 z-10">
             <button type="button" @click="editor.chain().focus().toggleHeading({ level: 1 }).run()" :class="{ 'bg-indigo-100 text-indigo-700': editor.isActive('heading', { level: 1 }) }" class="p-1.5 rounded hover:bg-gray-200 transition-colors" title="H1">
