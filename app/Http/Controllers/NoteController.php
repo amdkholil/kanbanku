@@ -53,7 +53,7 @@ class NoteController extends Controller
      */
     public function update(Request $request, Notes $note)
     {
-        if ($note->user_id !== Auth::id()) {
+        if ($note->user_id != Auth::id()) {
             abort(403);
         }
 
@@ -75,7 +75,7 @@ class NoteController extends Controller
      */
     public function destroy(Notes $note)
     {
-        if ($note->user_id !== Auth::id()) {
+        if ($note->user_id != Auth::id()) {
             abort(403);
         }
 
@@ -89,7 +89,7 @@ class NoteController extends Controller
      */
     public function toggleFavorite(Notes $note)
     {
-        if ($note->user_id !== Auth::id()) {
+        if ($note->user_id != Auth::id()) {
             abort(403);
         }
 
@@ -105,7 +105,7 @@ class NoteController extends Controller
      */
     public function togglePreview(Notes $note)
     {
-        if ($note->user_id !== Auth::id()) {
+        if ($note->user_id != Auth::id()) {
             abort(403);
         }
 
